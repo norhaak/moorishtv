@@ -1,5 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
+import 'package:http/http.dart' as http;
+
+class Program {
+  final String time;
+  final String title;
+
+  Program({this.time, this.title});
+
+  factory Program.fromJson(Map<String, dynamic> json) {
+    return Program(time: json['time'], title: json['title']);
+  }
+}
 
 void main() => runApp(new MoorishTVApp());
 
@@ -17,21 +30,94 @@ class MoorishTVApp extends StatelessWidget {
 }
 
 class MoorishTVState extends State<MoorishTV> {
-  final List<WordPair> _suggestions = <WordPair>[];
-  final Set<WordPair> _saved = new Set<WordPair>();
+  var _programs;
+  var _isLoading = false;
+  final Set<Program> _saved = new Set<Program>();
   final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
+
+  _fetchTVPrograms() async {
+    final response = await http.get('http://192.168.1.53:5000/programs');
+
+    var programs = <Program>[];
+    if (response.statusCode == 200) {
+      final map = json.decode(response.body);
+      final programsJson = map["programs"];
+      programsJson.forEach((programJson) {
+        Program program = new Program.fromJson(programJson);
+        programs.add(program);
+      });
+    } else {
+      throw Exception('Faild to load programs');
+    }
+
+    setState(() {
+      this._isLoading = false;
+      this._programs = programs;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('TV schedule for Al Aoula'), actions: <Widget>[
-        new IconButton(
-          icon: const Icon(Icons.list),
-          onPressed: _pushSaved,
-        )
-      ]),
-      body: _buildSuggestions(),
+        appBar:
+            AppBar(title: Text('Aujourd\'hui sur Al Aoula'), actions: <Widget>[
+          new IconButton(
+            icon: const Icon(Icons.list),
+            onPressed: _pushSaved,
+          ),
+          new IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              print("Reloading...");
+              setState(() {
+                _isLoading = true;
+              });
+              _fetchTVPrograms();
+            },
+          )
+        ]),
+        body: new Center(
+          child:
+              _isLoading ? new CircularProgressIndicator() : _buildPrograms(),
+        ));
+  }
+
+  Widget _buildPrograms() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(0.0),
+      itemCount: this._programs != null ? this._programs.length : 0,
+      itemBuilder: (context, i) {
+        final program = this._programs[i];
+        return new Column(
+          children: <Widget>[_buildRow(program), new Divider()],
+        );
+      },
     );
+  }
+
+  Widget _buildRow(Program program) {
+    final bool alreadySaved = _saved.contains(program);
+    return ListTile(
+        trailing: Text(program.time, style: _biggerFont),
+        title: Text(
+          program.title,
+          style: _biggerFont,
+          textAlign: TextAlign.right,
+          textDirection: TextDirection.ltr,
+        ),
+        leading: new Icon(
+          alreadySaved ? Icons.favorite : Icons.favorite_border,
+          color: alreadySaved ? Colors.red : null,
+        ),
+        onTap: () {
+          setState(() {
+            if (alreadySaved) {
+              _saved.remove(program);
+            } else {
+              _saved.add(program);
+            }
+          });
+        });
   }
 
   void _pushSaved() {
@@ -39,10 +125,10 @@ class MoorishTVState extends State<MoorishTV> {
       new MaterialPageRoute<void>(
         builder: (BuildContext context) {
           final Iterable<ListTile> tiles = _saved.map(
-            (WordPair pair) {
+            (Program program) {
               return new ListTile(
                 title: new Text(
-                  pair.asPascalCase,
+                  program.title,
                   style: _biggerFont,
                 ),
               );
@@ -62,42 +148,6 @@ class MoorishTVState extends State<MoorishTV> {
         },
       ),
     );
-  }
-
-  Widget _buildSuggestions() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemBuilder: (context, i) {
-        if (i.isOdd) return Divider();
-        final index = i ~/ 2;
-        if (index >= _suggestions.length) {
-          _suggestions.addAll(generateWordPairs().take(10));
-        }
-        return _buildRow(_suggestions[index]);
-      },
-    );
-  }
-
-  Widget _buildRow(WordPair pair) {
-    final bool alreadySaved = _saved.contains(pair);
-    return ListTile(
-        title: Text(
-          pair.asPascalCase,
-          style: _biggerFont,
-        ),
-        trailing: new Icon(
-          alreadySaved ? Icons.favorite : Icons.favorite_border,
-          color: alreadySaved ? Colors.red : null,
-        ),
-        onTap: () {
-          setState(() {
-            if (alreadySaved) {
-              _saved.remove(pair);
-            } else {
-              _saved.add(pair);
-            }
-          });
-        });
   }
 }
 
