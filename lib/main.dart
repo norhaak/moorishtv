@@ -32,11 +32,13 @@ class MoorishTVApp extends StatelessWidget {
 class MoorishTVState extends State<MoorishTV> {
   var _programs;
   var _isLoading = false;
+  final prodUrl = 'http://api.norhaaklabs.com/programs';
+  final devUrl = 'http://192.168.1.15:5000/programs';
   final Set<Program> _saved = new Set<Program>();
   final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
 
   _fetchTVPrograms() async {
-    final response = await http.get('http://192.168.1.53:5000/programs');
+    final response = await http.get(prodUrl);
 
     var programs = <Program>[];
     if (response.statusCode == 200) {
@@ -58,9 +60,11 @@ class MoorishTVState extends State<MoorishTV> {
 
   @override
   Widget build(BuildContext context) {
+    final arabic_title = 'شبكة البرامج ';
+    final french_title = 'Aujourd\'hui sur Al Aoula';
     return Scaffold(
         appBar:
-            AppBar(title: Text('Aujourd\'hui sur Al Aoula'), actions: <Widget>[
+            AppBar(title: Text(french_title), actions: <Widget>[
           new IconButton(
             icon: const Icon(Icons.list),
             onPressed: _pushSaved,
@@ -98,14 +102,14 @@ class MoorishTVState extends State<MoorishTV> {
   Widget _buildRow(Program program) {
     final bool alreadySaved = _saved.contains(program);
     return ListTile(
-        trailing: Text(program.time, style: _biggerFont),
+        leading: Text(program.time, style: _biggerFont),
         title: Text(
           program.title,
           style: _biggerFont,
-          textAlign: TextAlign.right,
-          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.left, // right for Arabic
+          textDirection: TextDirection.rtl, // ltr for Arabic
         ),
-        leading: new Icon(
+        trailing: new Icon(
           alreadySaved ? Icons.favorite : Icons.favorite_border,
           color: alreadySaved ? Colors.red : null,
         ),
@@ -130,6 +134,11 @@ class MoorishTVState extends State<MoorishTV> {
                 title: new Text(
                   program.title,
                   style: _biggerFont,
+                  textAlign: TextAlign.right,
+                ),
+                trailing: new Text(
+                  program.time,
+                  style: _biggerFont,
                 ),
               );
             },
@@ -141,7 +150,7 @@ class MoorishTVState extends State<MoorishTV> {
 
           return new Scaffold(
             appBar: new AppBar(
-              title: const Text('Favorites Programs'),
+              title: const Text('Vos Favoris'),
             ),
             body: new ListView(children: divided),
           );
