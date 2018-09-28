@@ -84,10 +84,10 @@ class MoorishTVState extends State<MoorishTV> {
 
   @override
   Widget build(BuildContext context) {
-    final arabic_title = 'شبكة البرامج ';
-    final french_title = 'Aujourd\'hui sur Al Aoula';
+    //final arabicTitle = 'شبكة البرامج ';
+    final frenchTitle = 'Aujourd\'hui sur Al Aoula';
     return Scaffold(
-      appBar: AppBar(title: Text(french_title), actions: <Widget>[
+      appBar: AppBar(title: Text(frenchTitle), actions: <Widget>[
         new IconButton(
           icon: const Icon(Icons.notifications),
           onPressed: _pushSaved,
