@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moorishtv/channelpage.dart';
+import 'package:moorishtv/main.dart';
 
 class AppDrawer extends StatelessWidget {
   final _channelsNames = [
@@ -62,7 +63,7 @@ class AppDrawer extends StatelessWidget {
           Navigator.push(
               context,
               new MaterialPageRoute(
-                  builder: (context) => new ChannelPage(channelName)));
+                  builder: (context) => new MoorishTVApp())); //new ChannelPage(channelName)));
         });
   }
 }

@@ -1,6 +1,6 @@
 # moorishtv
 
-A new Flutter project.
+Morocco's Public TV Schedule Flutter App.
 
 ## Getting Started
 

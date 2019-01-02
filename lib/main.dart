@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:moorishtv/appdrawer.dart';
 
 class Program {
   final String date;
@@ -41,6 +42,7 @@ class MoorishTVState extends State<MoorishTV> {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   var _programs;
   var _isLoading = false;
+  var _isSynced = false;
   final prodUrl = 'http://api.norhaaklabs.com/programs';
   final devUrl = 'http://192.168.1.15:5000/programs';
   final Set<Program> _saved = new Set<Program>();
@@ -78,6 +80,7 @@ class MoorishTVState extends State<MoorishTV> {
 
     setState(() {
       this._isLoading = false;
+      this._isSynced = true;
       this._programs = programs;
     });
   }
@@ -87,6 +90,7 @@ class MoorishTVState extends State<MoorishTV> {
     //final arabicTitle = 'شبكة البرامج ';
     final frenchTitle = 'Aujourd\'hui sur Al Aoula';
     return Scaffold(
+      drawer: new AppDrawer(),
       appBar: AppBar(title: Text(frenchTitle), actions: <Widget>[
         new IconButton(
           icon: const Icon(Icons.notifications),
